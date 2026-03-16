@@ -13,907 +13,527 @@ html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
 * { box-sizing: border-box; }
 
 .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.8s ease; overflow-y: auto; overflow-x: hidden; }
-.page.active { opacity: 1; pointer-events: all; }
+.page.active { opacity: 1; pointer-events: all; z-index: 10; }
 
 /* Stars */
 .stars-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-.star {
-  position: absolute; border-radius: 50%; background: #fff;
-  animation: twinkle var(--dur) ease-in-out infinite alternate;
-}
-@keyframes nebulaPulse {
-  0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.5; }
-  50% { transform: scale(1.15) translate(15px, -15px); opacity: 0.75; }
-}
+.star { position: absolute; background: #fff; border-radius: 50%; }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+@keyframes twinkle { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(0,200,255,0.3)} 50%{box-shadow:0 0 40px rgba(0,200,255,0.7)} }
+@keyframes rocket-launch { 0%{transform:translateY(0);opacity:1} 60%{transform:translateY(-300px);opacity:1} 100%{transform:translateY(-600px);opacity:0} }
+@keyframes smoke-particle { 0%{transform:translateY(0) scale(1);opacity:0.8} 100%{transform:translateY(60px) scale(3);opacity:0} }
+@keyframes slide-up { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes glow-border { 0%,100%{border-color:rgba(0,200,255,0.4);box-shadow:0 0 15px rgba(0,200,255,0.2)} 50%{border-color:rgba(0,200,255,0.8);box-shadow:0 0 30px rgba(0,200,255,0.5)} }
+@keyframes nebula-drift { 0%{transform:translate(0,0) rotate(0deg)} 50%{transform:translate(30px,-20px) rotate(180deg)} 100%{transform:translate(0,0) rotate(360deg)} }
+@keyframes shooting-star { 0%{transform:translateX(0) translateY(0);opacity:1} 100%{transform:translateX(300px) translateY(300px);opacity:0} }
+@keyframes card-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes aurora { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes earth-rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
-@keyframes floatIn {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
+.earth-container { width: 200px; height: 200px; margin: 0 auto 30px; position: relative; perspective: 800px; }
+.earth-sphere { width: 200px; height: 200px; border-radius: 50%; position: relative; overflow: hidden; animation: float 4s ease-in-out infinite; box-shadow: -20px 0 40px rgba(0,0,0,0.6) inset, 0 0 60px rgba(30,144,255,0.4), 0 0 120px rgba(30,144,255,0.2); }
+.earth-surface { position: absolute; width: 400px; height: 200px; top: 0; left: 0; animation: earth-rotate 10s linear infinite; background: linear-gradient(90deg, #1a6b3c 0%, #2d8bc9 15%, #1a6b3c 20%, #2d8bc9 35%, #c2a83e 38%, #2d8bc9 42%, #1a6b3c 50%, #2d8bc9 60%, #1a6b3c 65%, #c2a83e 68%, #2d8bc9 72%, #1a6b3c 80%, #2d8bc9 90%, #1a6b3c 100%); }
+.earth-surface::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255,255,255,0.1) 0%, transparent 40%); }
+.earth-atmosphere { position: absolute; top: -10px; left: -10px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, transparent 60%, rgba(100,180,255,0.15) 80%, rgba(50,130,255,0.08) 100%); pointer-events: none; }
+.earth-clouds { position: absolute; width: 400px; height: 200px; top: 0; left: 0; animation: earth-rotate 15s linear infinite reverse; opacity: 0.4; background: radial-gradient(ellipse at 20% 40%, white 0%, transparent 20%), radial-gradient(ellipse at 60% 30%, white 0%, transparent 15%), radial-gradient(ellipse at 80% 60%, white 0%, transparent 18%), radial-gradient(ellipse at 40% 70%, white 0%, transparent 12%); }
 
-@keyframes orbitParticle {
-  0% { transform: translate(0, -180px) rotate(0deg); }
-  100% { transform: translate(0, -180px) rotate(360deg); }
-}
+.rocket-wrapper { position: fixed; bottom: 20%; left: 50%; transform: translateX(-50%); z-index: 100; display: none; }
+.rocket-svg { font-size: 80px; animation: rocket-launch 2s ease-in forwards; }
+.smoke { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); }
+.smoke-p { position: absolute; width: 15px; height: 15px; border-radius: 50%; background: radial-gradient(circle, rgba(255,165,0,0.9), rgba(255,69,0,0.6), rgba(100,100,100,0.3)); animation: smoke-particle 1.5s ease-out forwards; }
 
-/* Earth */
-.earth-container { width: 220px; height: 220px; perspective: 800px; margin: 0 auto 30px; }
-.earth {
-  width: 220px; height: 220px; border-radius: 50%; position: relative;
-  animation: earthRotate 8s linear infinite;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, transparent 50%),
-    radial-gradient(circle at 70% 60%, #1a6b3c 15%, transparent 30%),
-    radial-gradient(circle at 25% 55%, #1a7a42 12%, transparent 28%),
-    radial-gradient(circle at 55% 35%, #1e8a4a 18%, transparent 35%),
-    radial-gradient(circle at 80% 30%, #15623a 10%, transparent 22%),
-    radial-gradient(circle at 40% 75%, #1a7040 14%, transparent 30%),
-    radial-gradient(circle at 65% 80%, #126838 8%, transparent 18%),
-    radial-gradient(ellipse at 50% 50%, #1565a8 0%, #0d4a8a 40%, #0a3266 70%, #061a3d 100%);
-  box-shadow:
-    inset -30px -20px 60px rgba(0,0,0,0.6),
-    inset 15px 15px 40px rgba(100,180,255,0.15),
-    0 0 60px rgba(50,130,220,0.4),
-    0 0 120px rgba(30,90,180,0.2);
-}
-.earth::after {
-  content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, rgba(150,200,255,0.12) 0%, transparent 60%);
-}
-.earth-clouds {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
-  animation: cloudsRotate 20s linear infinite;
-  background:
-    radial-gradient(ellipse at 20% 40%, rgba(255,255,255,0.25) 0%, transparent 20%),
-    radial-gradient(ellipse at 60% 25%, rgba(255,255,255,0.2) 0%, transparent 18%),
-    radial-gradient(ellipse at 75% 65%, rgba(255,255,255,0.18) 0%, transparent 15%),
-    radial-gradient(ellipse at 40% 80%, rgba(255,255,255,0.15) 0%, transparent 12%);
-}
-@keyframes earthRotate {
-  0% { transform: rotateY(0deg) rotateX(10deg) rotateZ(-5deg); }
-  100% { transform: rotateY(360deg) rotateX(10deg) rotateZ(-5deg); }
-}
-@keyframes cloudsRotate { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(-360deg); } }
+.card-glow { border: 1px solid rgba(0,200,255,0.3); animation: glow-border 3s ease-in-out infinite; transition: all 0.4s ease; }
+.card-glow:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(0,200,255,0.9); box-shadow: 0 0 40px rgba(0,200,255,0.4), 0 20px 60px rgba(0,0,0,0.3); }
 
-/* Rocket */
-.rocket-wrapper {
-  position: fixed; bottom: -200px; left: 50%; transform: translateX(-50%);
-  z-index: 100; opacity: 0; transition: none;
-}
-.rocket-wrapper.launching {
-  animation: rocketLaunch 2.5s ease-in forwards;
-}
-@keyframes rocketLaunch {
-  0% { bottom: -200px; opacity: 1; }
-  20% { bottom: 30%; opacity: 1; }
-  60% { bottom: 60%; opacity: 1; }
-  100% { bottom: 110%; opacity: 0; }
-}
-.rocket-body { position: relative; width: 60px; height: 140px; }
-.rocket-svg { width: 100%; height: 100%; }
+.nebula { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.3; animation: nebula-drift 20s ease-in-out infinite; }
 
-/* Smoke particles */
-.smoke-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 50%; z-index: 99; pointer-events: none; }
-.smoke {
-  position: absolute; border-radius: 50%; opacity: 0;
-  background: radial-gradient(circle, rgba(200,200,200,0.8) 0%, rgba(150,150,150,0.3) 50%, transparent 70%);
-}
-.smoke.active { animation: smokeRise 2s ease-out forwards; }
-@keyframes smokeRise {
-  0% { opacity: 0.9; transform: translateY(0) scale(0.5); }
-  50% { opacity: 0.5; }
-  100% { opacity: 0; transform: translateY(-200px) scale(3); }
-}
+.btn-cosmic { position: relative; overflow: hidden; transition: all 0.3s ease; }
+.btn-cosmic::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s ease; }
+.btn-cosmic:hover::before { left: 100%; }
+.btn-cosmic:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,200,255,0.5); }
 
-/* Fire particles */
-.fire-particle {
-  position: absolute; border-radius: 50%; opacity: 0; bottom: 0;
-  left: 50%; transform: translateX(-50%);
-}
-.fire-particle.active { animation: fireFlicker 0.8s ease-out forwards; }
-@keyframes fireFlicker {
-  0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateX(calc(-50% + var(--fx))) translateY(var(--fy)) scale(0.2); }
-}
+.faq-item { border: 1px solid rgba(0,200,255,0.2); border-radius: 12px; margin-bottom: 10px; overflow: hidden; transition: all 0.3s ease; }
+.faq-item:hover { border-color: rgba(0,200,255,0.5); }
+.faq-header { cursor: pointer; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+.faq-header:hover { background: rgba(0,200,255,0.05); }
+.faq-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; padding: 0 20px; }
+.faq-body.open { max-height: 300px; padding: 0 20px 16px; }
+.faq-chevron { transition: transform 0.3s ease; }
+.faq-chevron.open { transform: rotate(180deg); }
 
-/* Glow button */
-.glow-btn {
-  position: relative; padding: 16px 48px; border: 2px solid; border-radius: 50px;
-  font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 18px;
-  cursor: pointer; overflow: hidden; transition: all 0.3s ease;
-  text-transform: uppercase; letter-spacing: 3px;
-}
-.glow-btn::before {
-  content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
-  border-radius: 50%; background: rgba(255,255,255,0.15);
-  transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s;
-}
-.glow-btn::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50px;
-  background: linear-gradient(135deg, transparent 0%, var(--btn-glow, rgba(124,58,237,0.2)) 50%, transparent 100%);
-  opacity: 0; transition: opacity 0.3s;
-}
-.glow-btn:hover::before { width: 300px; height: 300px; }
-.glow-btn:hover::after { opacity: 1; }
-.glow-btn:hover { transform: scale(1.08); filter: brightness(1.15); }
+.profile-pic { width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #8b5cf6, #ec4899); padding: 4px; }
+.profile-pic-inner { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; font-size: 60px; }
 
-/* Login page */
-.login-bg {
-  background:
-    radial-gradient(ellipse 600px 400px at 20% 50%, rgba(168, 85, 247, 0.35) 0%, transparent 50%),
-    radial-gradient(ellipse 700px 500px at 80% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
-    radial-gradient(ellipse 500px 600px at 50% 80%, rgba(236, 72, 153, 0.25) 0%, transparent 50%),
-    linear-gradient(135deg, #0f0a1f 0%, #1a0a3f 30%, #2d1a5c 60%, #0f0520 100%);
-  background-attachment: fixed;
-}
-.nebula-float {
-  position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4;
-  animation: nebulaMove 12s ease-in-out infinite alternate;
-}
-@keyframes nebulaMove {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, -20px) scale(1.1); }
-  100% { transform: translate(-20px, 30px) scale(0.95); }
-}
+.explore-card { animation: card-float 4s ease-in-out infinite; }
+.explore-card:nth-child(2) { animation-delay: 0.5s; }
+.explore-card:nth-child(3) { animation-delay: 1s; }
+.explore-card:nth-child(4) { animation-delay: 1.5s; }
+.explore-card:nth-child(5) { animation-delay: 2s; }
 
-.glass-card {
-  background: rgba(255,255,255,0.04); backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-  position: relative; overflow: hidden;
-}
-.glass-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle at 0% 0%, rgba(168,85,247,0.05) 0%, transparent 50%);
-  pointer-events: none;
-}
+.aurora-bg { background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f0c29, #1a0a2e, #16213e); background-size: 400% 400%; animation: aurora 15s ease infinite; }
 
-.input-field {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px; padding: 14px 18px; color: #fff; width: 100%;
-  font-family: 'Exo 2', sans-serif; font-size: 15px; transition: all 0.3s;
-  outline: none;
-}
-.input-field:focus {
-  border-color: rgba(120,80,255,0.6);
-  box-shadow: 0 0 20px rgba(120,80,255,0.2);
-  background: rgba(255,255,255,0.08);
-}
-.input-field::placeholder { color: rgba(255,255,255,0.35); }
+.highlight-name { background: linear-gradient(90deg, #f472b6, #c084fc, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; }
 
-/* Profile page */
-.profile-bg {
-  background:
-    radial-gradient(ellipse 800px 600px at 30% 20%, rgba(16, 185, 129, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse 700px 800px at 70% 70%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse 900px 700px at 50% 50%, rgba(30, 144, 255, 0.15) 0%, transparent 60%),
-    linear-gradient(160deg, #030810 0%, #0d1f35 40%, #142a48 70%, #050d1a 100%);
-  background-attachment: fixed;
-}
+.form-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(0,200,255,0.3); border-radius: 10px; padding: 12px 16px; color: #e2e8f0; font-family: 'Exo 2', sans-serif; width: 100%; transition: all 0.3s; outline: none; }
+.form-input:focus { border-color: rgba(0,200,255,0.8); box-shadow: 0 0 20px rgba(0,200,255,0.2); background: rgba(255,255,255,0.08); }
+.form-input::placeholder { color: rgba(255,255,255,0.3); }
 
-.profile-card {
-  background: rgba(255,255,255,0.04); backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 50px rgba(16,185,129,0.1);
-  max-width: 700px; margin: 0 auto; padding: 50px 40px; text-align: center;
-  position: relative; overflow: hidden;
-}
-.profile-card::before {
-  content: ''; position: absolute; top: -50%; right: -50%; width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(16,185,129,0.08), transparent);
-  border-radius: 50%; pointer-events: none;
-}
-.profile-avatar {
-  width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 24px;
-  background: linear-gradient(135deg, #6c3ce0, #00c9a7, #3b82f6);
-  padding: 4px; box-shadow: 0 0 40px rgba(108,60,224,0.4);
-}
-.profile-avatar-inner {
-  width: 100%; height: 100%; border-radius: 50%;
-  background: linear-gradient(135deg, #1a1040, #0d2040);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 56px;
-}
-.name-highlight {
-  background: linear-gradient(90deg, #a78bfa, #06b6d4, #34d399);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text; font-weight: 900; font-size: 32px;
-  text-shadow: none; animation: nameGlow 3s ease-in-out infinite alternate;
-}
-@keyframes nameGlow {
-  0% { filter: brightness(1); }
-  100% { filter: brightness(1.3); }
-}
+.page-bg-1 { background: radial-gradient(ellipse at 20% 50%, #0a0a2e 0%, #000010 100%); }
+.page-bg-2 { background: linear-gradient(135deg, #0a0020 0%, #1a0040 30%, #0d0030 60%, #050015 100%); }
+.page-bg-3 { background: radial-gradient(ellipse at 80% 20%, #1a0a3e 0%, #0a0a1e 50%, #000010 100%); }
+.page-bg-4 { background: linear-gradient(180deg, #050520 0%, #0a1628 30%, #0d0a20 60%, #000010 100%); }
+.page-bg-5 { background: radial-gradient(ellipse at 50% 0%, #1a1040 0%, #0a0a20 50%, #000010 100%); }
+.page-bg-6 { background: radial-gradient(ellipse at 50% 50%, #0d0a30 0%, #050015 60%, #000005 100%); }
 
-/* Explore cards */
-.explore-bg {
-  background:
-    radial-gradient(ellipse 900px 600px at 10% 30%, rgba(249, 115, 22, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse 800px 700px at 90% 70%, rgba(6, 182, 212, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse 750px 900px at 50% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
-    linear-gradient(170deg, #0a0515 0%, #160a30 40%, #0d0f3a 70%, #050010 100%);
-  background-attachment: fixed;
-}
+.shooting-star-el { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; }
+.shooting-star-el::after { content:''; position:absolute; top:0; left:0; width:40px; height:1px; background:linear-gradient(90deg,white,transparent); transform:rotate(-45deg); transform-origin:0 0; }
 
-.explore-card {
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px; padding: 28px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative; overflow: hidden;
-}
-.explore-card::before {
-  content: ''; position: absolute; inset: 0; border-radius: 20px;
-  padding: 2px; background: linear-gradient(135deg, transparent 30%, var(--glow-color, #6c3ce0) 50%, transparent 70%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  opacity: 0; transition: opacity 0.4s;
-}
-.explore-card::after {
-  content: ''; position: absolute; inset: 0; border-radius: 20px;
-  background: radial-gradient(circle at 50% 0%, var(--glow-color, rgba(108,60,224,0.1)) 0%, transparent 60%);
-  opacity: 0; transition: opacity 0.3s;
-}
-.explore-card:hover::before { opacity: 1; }
-.explore-card:hover::after { opacity: 0.8; }
-.explore-card:hover {
-  transform: translateY(-12px); background: rgba(255,255,255,0.08);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px var(--glow-color, rgba(108,60,224,0.3)), inset 0 1px 0 rgba(255,255,255,0.1);
-}
-
-/* Skill bars */
-.skill-bar-bg { background: rgba(255,255,255,0.08); border-radius: 8px; height: 10px; overflow: hidden; }
-.skill-bar-fill { height: 100%; border-radius: 8px; transition: width 1.5s ease; width: 0; }
-
-/* Contact page */
-.contact-bg {
-  background:
-    radial-gradient(ellipse 700px 600px at 20% 80%, rgba(16, 185, 129, 0.22) 0%, transparent 50%),
-    radial-gradient(ellipse 750px 750px at 80% 20%, rgba(99, 102, 241, 0.28) 0%, transparent 50%),
-    linear-gradient(145deg, #050a18 0%, #0d1f40 40%, #0f1e48 70%, #040810 100%);
-  background-attachment: fixed;
-}
-
-/* FAQ */
-.faq-item {
-  border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
-  overflow: hidden; transition: all 0.3s; margin-bottom: 10px;
-  background: rgba(255,255,255,0.03);
-}
-.faq-item:hover { border-color: rgba(120,80,255,0.3); }
-.faq-header {
-  padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between;
-  align-items: center; font-family: 'Exo 2', sans-serif; color: #c4b5fd;
-  font-weight: 500; transition: background 0.3s;
-}
-.faq-header:hover { background: rgba(255,255,255,0.04); }
-.faq-body {
-  max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s;
-  padding: 0 20px; color: rgba(255,255,255,0.6); font-family: 'Exo 2', sans-serif; font-size: 14px; line-height: 1.7;
-}
-.faq-item.open .faq-body { max-height: 200px; padding: 0 20px 16px; }
-.faq-item.open .faq-chevron { transform: rotate(180deg); }
-.faq-chevron { transition: transform 0.3s; }
-
-/* Final page */
-.final-bg {
-  background:
-    radial-gradient(ellipse 900px 800px at 50% 50%, rgba(168, 85, 247, 0.3) 0%, transparent 60%),
-    radial-gradient(ellipse 700px 600px at 20% 80%, rgba(6, 182, 212, 0.2) 0%, transparent 50%),
-    linear-gradient(180deg, #030008 0%, #0f0a2e 50%, #050015 100%);
-  background-attachment: fixed;
-}
-.shooting-star {
-  position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%;
-  box-shadow: 0 0 6px #fff, -20px 0 10px rgba(255,255,255,0.5), -40px 0 6px rgba(255,255,255,0.2);
-  animation: shoot linear infinite;
-}
-@keyframes shoot {
-  0% { transform: translate(0, 0); opacity: 1; }
-  70% { opacity: 1; }
-  100% { transform: translate(var(--sx), var(--sy)); opacity: 0; }
-}
-
-/* Page transitions */
-.fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s ease; }
-.fade-up.visible { opacity: 1; transform: translateY(0); }
-.stagger-1 { transition-delay: 0.1s; }
-.stagger-2 { transition-delay: 0.2s; }
-.stagger-3 { transition-delay: 0.3s; }
-.stagger-4 { transition-delay: 0.4s; }
-.stagger-5 { transition-delay: 0.5s; }
-
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(120,80,255,0.3); border-radius: 3px; }
-
-/* Explore tabs */
-.tab-btn {
-  padding: 10px 22px; border-radius: 30px; font-family: 'Orbitron', sans-serif;
-  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;
-  border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;
-}
-.tab-btn.active, .tab-btn:hover {
-  background: rgba(120,80,255,0.2); border-color: rgba(120,80,255,0.5);
-  color: #c4b5fd; box-shadow: 0 0 20px rgba(120,80,255,0.15);
-}
-
-/* Floating astronaut */
-.astronaut-float { animation: astroFloat 6s ease-in-out infinite; }
-@keyframes astroFloat {
-  0%, 100% { transform: translateY(0) rotate(-5deg); }
-  50% { transform: translateY(-15px) rotate(5deg); }
-}
-
-.collab-badge {
-  display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 13px;
-  font-family: 'Exo 2', sans-serif; font-weight: 600;
-  background: linear-gradient(135deg, rgba(255,200,0,0.2), rgba(255,100,0,0.2));
-  border: 1px solid rgba(255,200,0,0.3); color: #fcd34d;
-  animation: collabPulse 2s ease-in-out infinite alternate;
-}
-@keyframes collabPulse {
-  0% { box-shadow: 0 0 10px rgba(255,200,0,0.1); }
-  100% { box-shadow: 0 0 25px rgba(255,200,0,0.3); }
-}
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,200,255,0.5); }
 </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full" style="margin:0; overflow:hidden; background:#000;"><!-- ===== LANDING PAGE ===== -->
-  <div id="page-landing" class="page active">
-   <div class="stars-bg" id="landing-stars"></div><!-- Animated nebula blobs -->
-   <div style="position:absolute; top:5%; left:5%; width:300px; height:300px; background:radial-gradient(circle, rgba(120,40,200,0.3), transparent); border-radius:50%; filter:blur(80px); animation:nebulaPulse 8s ease-in-out infinite;"></div>
-   <div style="position:absolute; bottom:10%; right:8%; width:350px; height:350px; background:radial-gradient(circle, rgba(0,200,150,0.25), transparent); border-radius:50%; filter:blur(90px); animation:nebulaPulse 10s ease-in-out infinite 2s;"></div>
-   <div style="position:absolute; top:50%; left:50%; width:400px; height:400px; background:radial-gradient(circle, rgba(100,50,200,0.2), transparent); border-radius:50%; filter:blur(100px); animation:nebulaPulse 12s ease-in-out infinite 4s; transform:translate(-50%, -50%);"></div>
-   <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:20px;">
-    <!-- Floating particles around earth -->
-    <div style="position:absolute; width:360px; height:360px; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">
-     <div style="position:absolute; width:20px; height:20px; background:rgba(100,200,255,0.4); border-radius:50%; top:0%; left:50%; animation:orbitParticle 20s linear infinite;"></div>
-     <div style="position:absolute; width:16px; height:16px; background:rgba(150,100,255,0.3); border-radius:50%; top:25%; right:10%; animation:orbitParticle 25s linear infinite reverse;"></div>
-     <div style="position:absolute; width:14px; height:14px; background:rgba(0,200,150,0.35); border-radius:50%; bottom:20%; left:15%; animation:orbitParticle 22s linear infinite;"></div>
+ <body class="h-full" style="font-family: 'Exo 2', sans-serif; margin:0; padding:0; background:#000010; color:#e2e8f0; overflow:hidden;">
+  <div id="app-wrapper" style="width:100%; height:100%; position:relative; overflow:hidden;"><!-- LANDING PAGE -->
+   <div id="page-landing" class="page active page-bg-1">
+    <div class="stars-bg" id="stars-landing"></div>
+    <div class="nebula" style="width:400px;height:400px;background:rgba(100,50,200,0.2);top:10%;left:-10%;"></div>
+    <div class="nebula" style="width:300px;height:300px;background:rgba(0,100,200,0.15);bottom:10%;right:-5%;animation-delay:5s;"></div>
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:20px;text-align:center;">
+     <div class="earth-container">
+      <div class="earth-sphere">
+       <div class="earth-surface"></div>
+       <div class="earth-clouds"></div>
+      </div>
+      <div class="earth-atmosphere"></div>
+     </div>
+     <h1 id="hero-title" style="font-family:'Orbitron',sans-serif;font-size:clamp(24px,4vw,48px);font-weight:800;margin-bottom:16px;background:linear-gradient(90deg,#60a5fa,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Journey Through My Code Galaxy</h1>
+     <p style="font-size:clamp(14px,2vw,18px);color:rgba(255,255,255,0.6);margin-bottom:40px;max-width:500px;">Embark on an interstellar adventure through creativity and code</p><button id="launch-btn" class="btn-cosmic" onclick="launchRocket()" style="font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:16px 48px;border-radius:50px;font-size:18px;font-weight:700;cursor:pointer;letter-spacing:2px;">🚀 LAUNCH</button>
     </div>
-    <div class="earth-container fade-up" style="position:relative; z-index:2;">
-     <div class="earth">
-      <div class="earth-clouds"></div>
+   </div><!-- ROCKET ANIMATION -->
+   <div class="rocket-wrapper" id="rocket-wrapper">
+    <div class="smoke" id="smoke-container"></div>
+    <div class="rocket-svg">
+     🚀
+    </div>
+   </div><!-- LOGIN PAGE -->
+   <div id="page-login" class="page page-bg-2">
+    <div class="stars-bg" id="stars-login"></div>
+    <div class="nebula" style="width:500px;height:500px;background:rgba(139,92,246,0.2);top:-10%;right:-15%;"></div>
+    <div class="nebula" style="width:350px;height:350px;background:rgba(236,72,153,0.15);bottom:5%;left:-10%;animation-delay:7s;"></div>
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:20px;">
+     <div class="card-glow" style="background:rgba(15,10,40,0.8);backdrop-filter:blur(20px);border-radius:24px;padding:40px;width:100%;max-width:420px;">
+      <div style="text-align:center;margin-bottom:30px;">
+       <div style="font-size:48px;margin-bottom:12px;">
+        🌌
+       </div>
+       <h2 style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:700;background:linear-gradient(90deg,#c084fc,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Space Station Login</h2>
+       <p style="color:rgba(255,255,255,0.5);font-size:14px;margin-top:8px;">Enter your credentials to continue</p>
+      </div>
+      <form id="login-form" onsubmit="event.preventDefault(); navigateTo('page-profile');">
+       <div style="margin-bottom:20px;"><label for="username" style="display:block;font-size:13px;color:rgba(0,200,255,0.8);margin-bottom:6px;font-weight:500;">Username</label> <input type="text" id="username" class="form-input" placeholder="Enter your username" required>
+       </div>
+       <div style="margin-bottom:28px;"><label for="login-email" style="display:block;font-size:13px;color:rgba(0,200,255,0.8);margin-bottom:6px;font-weight:500;">Email</label> <input type="email" id="login-email" class="form-input" placeholder="Enter your email" required>
+       </div><button type="submit" class="btn-cosmic" style="width:100%;font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:1px;">LOGIN →</button>
+      </form>
      </div>
     </div>
-    <div style="text-align:center; margin-top:24px;">
-     <h1 id="landing-title" class="fade-up stagger-1" style="font-family:'Orbitron',sans-serif; font-size:clamp(24px,5vw,48px); font-weight:900; text-align:center; background:linear-gradient(90deg, #a78bfa 0%, #06b6d4 50%, #34d399 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin:0 0 16px; line-height:1.1; letter-spacing:2px; text-transform:uppercase; filter:drop-shadow(0 0 20px rgba(167,139,250,0.3));">Journey Through My Code Galaxy</h1>
-     <p class="fade-up stagger-2" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.6); font-size:clamp(14px,2.2vw,18px); margin:0 0 8px; text-align:center; letter-spacing:1px;">✨ Explore the Universe of Code ✨</p>
-     <p class="fade-up stagger-2" style="font-family:'Exo 2',sans-serif; color:rgba(100,200,255,0.5); font-size:clamp(12px,1.8vw,15px); margin:0 0 48px; text-align:center;">An interactive journey through creative web experiences</p>
-    </div><button id="launch-btn" class="glow-btn fade-up stagger-3" style="background:linear-gradient(135deg, #7c3aed, #8b5cf6); color:#fff; border-color:#a78bfa; box-shadow:0 0 40px rgba(124,58,237,0.4), 0 0 80px rgba(124,58,237,0.2); font-size:16px; padding:16px 56px; position:relative; overflow:visible;" onmouseover="this.style.boxShadow='0 0 60px rgba(124,58,237,0.6), 0 0 120px rgba(124,58,237,0.3)'" onmouseout="this.style.boxShadow='0 0 40px rgba(124,58,237,0.4), 0 0 80px rgba(124,58,237,0.2)'" onclick="launchRocket()"> <span style="display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:2px;">🚀 LAUNCH MISSION</span> </button>
-    <div class="fade-up stagger-4" style="margin-top:48px; display:flex; gap:20px; justify-content:center; flex-wrap:wrap; font-family:'Exo 2',sans-serif; font-size:12px; color:rgba(255,255,255,0.4);">
-     <div style="display:flex; align-items:center; gap:6px;"><span style="color:#06b6d4;">⚡</span> Interactive
-     </div>
-     <div style="display:flex; align-items:center; gap:6px;"><span style="color:#ec4899;">✨</span> Modern
-     </div>
-     <div style="display:flex; align-items:center; gap:6px;"><span style="color:#34d399;">🎨</span> Creative
+   </div><!-- PROFILE PAGE -->
+   <div id="page-profile" class="page page-bg-3">
+    <div class="stars-bg" id="stars-profile"></div>
+    <div class="nebula" style="width:450px;height:450px;background:rgba(59,130,246,0.15);top:5%;left:60%;"></div>
+    <div class="nebula" style="width:300px;height:300px;background:rgba(168,85,247,0.2);bottom:15%;left:-5%;animation-delay:3s;"></div>
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:30px 20px;">
+     <div class="card-glow" style="background:rgba(15,10,40,0.85);backdrop-filter:blur(20px);border-radius:24px;padding:40px;width:100%;max-width:550px;text-align:center;">
+      <div class="profile-pic" style="margin:0 auto 24px;">
+       <div class="profile-pic-inner">
+        👩‍💻
+       </div>
+      </div>
+      <h2 id="profile-name" class="highlight-name" style="font-family:'Orbitron',sans-serif;font-size:clamp(26px,4vw,36px);margin-bottom:8px;">Shalini Mutyala</h2>
+      <p style="color:rgba(0,200,255,0.7);font-size:14px;font-weight:500;margin-bottom:20px;letter-spacing:2px;font-family:'Orbitron',sans-serif;">✦ CREATIVE WEB DEVELOPER ✦</p>
+      <p id="profile-desc" style="color:rgba(255,255,255,0.7);line-height:1.8;font-size:15px;margin-bottom:30px;">Shalini Mutyala is a passionate and creative web developer who thrives on transforming ideas into stunning, interactive digital experiences. With a deep love for modern UI design and front-end technologies, she specializes in crafting pixel-perfect websites that captivate users and tell compelling stories. From sleek landing pages to complex web applications, Shalini brings artistry and technical precision to every project. Her journey through the code galaxy is fueled by curiosity, innovation, and an unwavering commitment to pushing the boundaries of what's possible on the web. She believes that great code is not just functional — it's beautiful, intuitive, and inspires connection.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;"><span style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.3);border-radius:20px;padding:6px 16px;font-size:13px;color:rgba(0,200,255,0.8);">HTML/CSS</span> <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:6px 16px;font-size:13px;color:rgba(139,92,246,0.8);">JavaScript</span> <span style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:20px;padding:6px 16px;font-size:13px;color:rgba(236,72,153,0.8);">React</span> <span style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:20px;padding:6px 16px;font-size:13px;color:rgba(52,211,153,0.8);">UI/UX</span>
+      </div><button class="btn-cosmic" onclick="navigateTo('page-explore')" style="margin-top:30px;font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#ec4899,#8b5cf6);color:white;border:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:1px;">EXPLORE MORE 🔭</button>
      </div>
     </div>
-   </div>
-  </div><!-- Rocket -->
-  <div class="rocket-wrapper" id="rocket">
-   <div class="rocket-body">
-    <svg class="rocket-svg" viewbox="0 0 60 140" fill="none"><path d="M30 0 C30 0 10 30 10 80 L10 110 L25 105 L35 105 L50 110 L50 80 C50 30 30 0 30 0Z" fill="url(#rg1)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" /> <ellipse cx="30" cy="55" rx="10" ry="12" fill="#1a1a3e" stroke="#4fc3f7" stroke-width="1.5" /> <ellipse cx="30" cy="54" rx="6" ry="8" fill="radial-gradient(#4fc3f7, #0a1a3e)" /> <circle cx="30" cy="53" r="4" fill="#4fc3f7" opacity="0.4" /> <path d="M10 85 L0 115 L10 108Z" fill="#e53935" /> <path d="M50 85 L60 115 L50 108Z" fill="#e53935" /> <path d="M25 105 L20 135 L30 125 L40 135 L35 105Z" fill="#ff6f00" /> <path d="M28 105 L25 130 L30 122 L35 130 L32 105Z" fill="#ffca28" /> <defs>
-      <lineargradient id="rg1" x1="10" y1="0" x2="50" y2="140">
-       <stop offset="0%" stop-color="#e0e0e0" />
-       <stop offset="100%" stop-color="#9e9e9e" />
-      </lineargradient>
-     </defs>
-    </svg>
-    <div id="fire-particles" style="position:absolute; bottom:-20px; left:0; width:100%; height:40px;"></div>
+   </div><!-- EXPLORE PAGE -->
+   <div id="page-explore" class="page page-bg-4">
+    <div class="stars-bg" id="stars-explore"></div>
+    <div class="nebula" style="width:500px;height:500px;background:rgba(34,211,238,0.1);top:-15%;left:30%;"></div>
+    <div class="nebula" style="width:400px;height:400px;background:rgba(251,146,60,0.1);bottom:-10%;right:20%;animation-delay:8s;"></div>
+    <div style="position:relative;z-index:2;min-height:100%;padding:40px 20px 60px;">
+     <h2 style="text-align:center;font-family:'Orbitron',sans-serif;font-size:clamp(24px,3.5vw,40px);font-weight:800;margin-bottom:40px;background:linear-gradient(90deg,#22d3ee,#a78bfa,#fb7185);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Explore The Galaxy</h2>
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1000px;margin:0 auto;"><!-- Skills -->
+      <div class="card-glow explore-card" style="background:linear-gradient(135deg,rgba(34,211,238,0.1),rgba(15,10,40,0.9));border-radius:20px;padding:28px;position:relative;overflow:hidden;">
+       <div style="position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(34,211,238,0.2),transparent);border-radius:0 0 0 100%;"></div>
+       <div style="font-size:36px;margin-bottom:14px;">
+        ⚡
+       </div>
+       <h3 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:#22d3ee;margin-bottom:12px;">Skills</h3>
+       <div style="display:flex;flex-wrap:wrap;gap:8px;"><span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">JavaScript</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">React</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">CSS/Tailwind</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">Node.js</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">Python</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">Figma</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">Git</span> <span style="background:rgba(34,211,238,0.15);border:1px solid rgba(34,211,238,0.3);border-radius:8px;padding:6px 12px;font-size:12px;color:#22d3ee;">TypeScript</span>
+       </div>
+      </div><!-- Experience -->
+      <div class="card-glow explore-card" style="background:linear-gradient(135deg,rgba(251,146,60,0.1),rgba(15,10,40,0.9));border-radius:20px;padding:28px;position:relative;overflow:hidden;">
+       <div style="position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(251,146,60,0.2),transparent);border-radius:0 0 0 100%;"></div>
+       <div style="font-size:36px;margin-bottom:14px;">
+        🏆
+       </div>
+       <h3 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:#fb923c;margin-bottom:12px;">Experience</h3>
+       <div style="border-left:2px solid rgba(251,146,60,0.4);padding-left:16px;">
+        <div style="margin-bottom:14px;">
+         <span style="color:#fb923c;font-weight:600;font-size:14px;">Senior Developer</span><br><span style="color:rgba(255,255,255,0.5);font-size:12px;">2022 - Present</span>
+         <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;">Leading frontend architecture for enterprise applications</p>
+        </div>
+        <div>
+         <span style="color:#fb923c;font-weight:600;font-size:14px;">Web Developer</span><br><span style="color:rgba(255,255,255,0.5);font-size:12px;">2020 - 2022</span>
+         <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;">Built responsive websites and interactive web experiences</p>
+        </div>
+       </div>
+      </div><!-- Projects -->
+      <div class="card-glow explore-card" style="background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(15,10,40,0.9));border-radius:20px;padding:28px;position:relative;overflow:hidden;">
+       <div style="position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(168,85,247,0.2),transparent);border-radius:0 0 0 100%;"></div>
+       <div style="font-size:36px;margin-bottom:14px;">
+        🚀
+       </div>
+       <h3 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:#a855f7;margin-bottom:12px;">Projects</h3>
+       <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:rgba(168,85,247,0.1);border-radius:12px;padding:12px;border:1px solid rgba(168,85,247,0.2);">
+         <span style="color:#a855f7;font-weight:600;font-size:14px;">🌐 Portfolio Galaxy</span>
+         <p style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">Immersive space-themed portfolio</p>
+        </div>
+        <div style="background:rgba(168,85,247,0.1);border-radius:12px;padding:12px;border:1px solid rgba(168,85,247,0.2);">
+         <span style="color:#a855f7;font-weight:600;font-size:14px;">📊 Data Visualizer</span>
+         <p style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">Real-time analytics dashboard</p>
+        </div>
+        <div style="background:rgba(168,85,247,0.1);border-radius:12px;padding:12px;border:1px solid rgba(168,85,247,0.2);">
+         <span style="color:#a855f7;font-weight:600;font-size:14px;">🎨 Design System</span>
+         <p style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">Component library with 50+ elements</p>
+        </div>
+       </div>
+      </div><!-- My Journey -->
+      <div class="card-glow explore-card" style="background:linear-gradient(135deg,rgba(52,211,153,0.1),rgba(15,10,40,0.9));border-radius:20px;padding:28px;position:relative;overflow:hidden;">
+       <div style="position:absolute;top:0;right:0;width:100px;height:100px;background:radial-gradient(circle,rgba(52,211,153,0.2),transparent);border-radius:0 0 0 100%;"></div>
+       <div style="font-size:36px;margin-bottom:14px;">
+        🗺️
+       </div>
+       <h3 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:#34d399;margin-bottom:12px;">My Journey</h3>
+       <div style="position:relative;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+         <div style="width:12px;height:12px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,0.5);flex-shrink:0;"></div><span style="color:rgba(255,255,255,0.7);font-size:13px;">Discovered coding through curiosity</span>
+        </div>
+        <div style="width:1px;height:8px;background:rgba(52,211,153,0.3);margin-left:5px;"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+         <div style="width:12px;height:12px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,0.5);flex-shrink:0;"></div><span style="color:rgba(255,255,255,0.7);font-size:13px;">Built first website at 16</span>
+        </div>
+        <div style="width:1px;height:8px;background:rgba(52,211,153,0.3);margin-left:5px;"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+         <div style="width:12px;height:12px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,0.5);flex-shrink:0;"></div><span style="color:rgba(255,255,255,0.7);font-size:13px;">Mastered React &amp; modern frameworks</span>
+        </div>
+        <div style="width:1px;height:8px;background:rgba(52,211,153,0.3);margin-left:5px;"></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+         <div style="width:12px;height:12px;border-radius:50%;background:#34d399;box-shadow:0 0 10px rgba(52,211,153,0.5);flex-shrink:0;"></div><span style="color:rgba(255,255,255,0.7);font-size:13px;">Now exploring the code galaxy ✨</span>
+        </div>
+       </div>
+      </div><!-- Collaborations - HIGHLIGHTED -->
+      <div class="card-glow explore-card" style="background:linear-gradient(135deg,rgba(244,114,182,0.15),rgba(139,92,246,0.1),rgba(15,10,40,0.9));border-radius:20px;padding:28px;position:relative;overflow:hidden;grid-column:1/-1;border-color:rgba(244,114,182,0.5);box-shadow:0 0 30px rgba(244,114,182,0.15);">
+       <div style="position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#f472b6,#a78bfa,#60a5fa,#34d399);"></div>
+       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="font-size:36px;">
+         🤝
+        </div>
+        <div>
+         <h3 style="font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;background:linear-gradient(90deg,#f472b6,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Collaborations</h3><span style="background:linear-gradient(90deg,#f472b6,#a78bfa);color:white;font-size:10px;padding:3px 10px;border-radius:10px;font-weight:700;letter-spacing:1px;">★ HIGHLIGHTED</span>
+        </div>
+       </div>
+       <p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;margin-bottom:16px;">I believe that the best projects are born from collaboration. Working with designers, developers, and visionaries from around the world has shaped my craft and expanded my creative horizons. Every collaboration is a new constellation in my code galaxy.</p>
+       <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.3);border-radius:12px;padding:10px 16px;">
+         <span style="font-size:20px;">🎯</span>
+         <div>
+          <span style="color:#f472b6;font-weight:600;font-size:13px;">Open Source</span><br><span style="color:rgba(255,255,255,0.5);font-size:11px;">10+ contributions</span>
+         </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:10px 16px;">
+         <span style="font-size:20px;">🌍</span>
+         <div>
+          <span style="color:#a855f7;font-weight:600;font-size:13px;">Global Teams</span><br><span style="color:rgba(255,255,255,0.5);font-size:11px;">5+ countries</span>
+         </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);border-radius:12px;padding:10px 16px;">
+         <span style="font-size:20px;">💡</span>
+         <div>
+          <span style="color:#60a5fa;font-weight:600;font-size:13px;">Hackathons</span><br><span style="color:rgba(255,255,255,0.5);font-size:11px;">8+ events</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div style="text-align:center;margin-top:40px;"><button class="btn-cosmic" onclick="navigateTo('page-contact')" style="font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#06b6d4,#3b82f6);color:white;border:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:1px;">NEXT → CONTACT 📡</button>
+     </div>
+    </div>
+   </div><!-- CONTACT PAGE -->
+   <div id="page-contact" class="page page-bg-5">
+    <div class="stars-bg" id="stars-contact"></div>
+    <div class="nebula" style="width:400px;height:400px;background:rgba(59,130,246,0.15);top:0;right:-10%;"></div>
+    <div style="position:relative;z-index:2;min-height:100%;padding:40px 20px 60px;">
+     <h2 style="text-align:center;font-family:'Orbitron',sans-serif;font-size:clamp(24px,3.5vw,40px);font-weight:800;margin-bottom:10px;background:linear-gradient(90deg,#60a5fa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Get In Touch</h2>
+     <p style="text-align:center;color:rgba(255,255,255,0.5);margin-bottom:30px;font-size:14px;">Let's build something amazing together</p>
+     <div style="max-width:600px;margin:0 auto;"><!-- Contact Info -->
+      <div style="display:flex;gap:16px;margin-bottom:30px;flex-wrap:wrap;justify-content:center;">
+       <div class="card-glow" style="background:rgba(15,10,40,0.8);border-radius:16px;padding:16px 24px;display:flex;align-items:center;gap:12px;flex:1;min-width:240px;"><span style="font-size:24px;">📧</span>
+        <div>
+         <span style="font-size:11px;color:rgba(0,200,255,0.6);font-weight:500;">Email</span><br><span id="contact-email-display" style="color:#e2e8f0;font-size:14px;">shalinimutyala92@gmail.com</span>
+        </div>
+       </div>
+       <div class="card-glow" style="background:rgba(15,10,40,0.8);border-radius:16px;padding:16px 24px;display:flex;align-items:center;gap:12px;flex:1;min-width:240px;"><span style="font-size:24px;">💬</span>
+        <div>
+         <span style="font-size:11px;color:rgba(0,200,255,0.6);font-weight:500;">WhatsApp</span><br><span id="contact-phone-display" style="color:#e2e8f0;font-size:14px;">9948222376</span>
+        </div>
+       </div>
+      </div><!-- Contact Form -->
+      <div class="card-glow" style="background:rgba(15,10,40,0.8);border-radius:20px;padding:30px;margin-bottom:30px;">
+       <form id="contact-form" onsubmit="event.preventDefault(); showContactSuccess();">
+        <div style="margin-bottom:16px;"><label for="contact-name" style="display:block;font-size:13px;color:rgba(0,200,255,0.8);margin-bottom:6px;font-weight:500;">Name</label> <input type="text" id="contact-name" class="form-input" placeholder="Your name" required>
+        </div>
+        <div style="margin-bottom:16px;"><label for="contact-email" style="display:block;font-size:13px;color:rgba(0,200,255,0.8);margin-bottom:6px;font-weight:500;">Email</label> <input type="email" id="contact-email" class="form-input" placeholder="Your email" required>
+        </div>
+        <div style="margin-bottom:20px;"><label for="contact-msg" style="display:block;font-size:13px;color:rgba(0,200,255,0.8);margin-bottom:6px;font-weight:500;">Message</label> <textarea id="contact-msg" class="form-input" rows="4" placeholder="Your message..." required style="resize:vertical;"></textarea>
+        </div><button type="submit" id="contact-submit-btn" class="btn-cosmic" style="width:100%;font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:1px;">SEND MESSAGE 🚀</button>
+        <div id="contact-success" style="display:none;text-align:center;margin-top:16px;color:#34d399;font-weight:600;">
+         ✅ Message sent successfully!
+        </div>
+       </form>
+      </div><!-- FAQ Section -->
+      <div style="margin-bottom:30px;">
+       <h3 style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;text-align:center;margin-bottom:20px;color:rgba(0,200,255,0.9);">Frequently Asked Questions</h3>
+       <div id="faq-container"></div>
+      </div>
+      <div style="text-align:center;"><button class="btn-cosmic" onclick="navigateTo('page-final')" style="font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#ec4899,#f59e0b);color:white;border:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:1px;">FINAL PAGE ✨</button>
+      </div>
+     </div>
+    </div>
+   </div><!-- FINAL PAGE -->
+   <div id="page-final" class="page page-bg-6">
+    <div class="stars-bg" id="stars-final"></div>
+    <div class="nebula" style="width:500px;height:500px;background:rgba(244,114,182,0.1);top:20%;left:30%;"></div>
+    <div class="nebula" style="width:350px;height:350px;background:rgba(96,165,250,0.1);top:40%;right:20%;animation-delay:6s;"></div>
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:30px 20px;text-align:center;">
+     <div style="font-size:80px;margin-bottom:20px;animation:float 3s ease-in-out infinite;">
+      🧑‍🚀
+     </div>
+     <h2 id="closing-text" style="font-family:'Orbitron',sans-serif;font-size:clamp(22px,3.5vw,38px);font-weight:800;margin-bottom:16px;background:linear-gradient(90deg,#f472b6,#c084fc,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Thank You for Visiting My Profile</h2>
+     <p style="color:rgba(255,255,255,0.6);font-size:clamp(14px,2vw,18px);max-width:500px;line-height:1.7;margin-bottom:30px;">You are a great explorer of my code galaxy 🌌</p>
+     <div style="display:flex;gap:20px;font-size:40px;margin-bottom:30px;animation:float 4s ease-in-out infinite;"><span>🪐</span><span>⭐</span><span>🌙</span><span>☄️</span><span>🛸</span>
+     </div><button class="btn-cosmic" onclick="navigateTo('page-landing')" style="font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:14px 40px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:1px;">🔄 RESTART JOURNEY</button>
+    </div>
    </div>
   </div>
-  <div class="smoke-container" id="smoke-container"></div><!-- ===== LOGIN PAGE ===== -->
-  <div id="page-login" class="page login-bg">
-   <div class="nebula-float" style="width:300px; height:300px; background:rgba(120,40,200,0.3); top:10%; left:-5%;"></div>
-   <div class="nebula-float" style="width:250px; height:250px; background:rgba(0,150,255,0.25); top:60%; right:-5%; animation-delay:-4s;"></div>
-   <div class="nebula-float" style="width:200px; height:200px; background:rgba(255,0,150,0.2); bottom:5%; left:30%; animation-delay:-8s;"></div>
-   <div class="stars-bg" id="login-stars"></div>
-   <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:20px;">
-    <div class="glass-card fade-up" style="width:100%; max-width:420px; padding:44px 36px;">
-     <div style="text-align:center; margin-bottom:32px;">
-      <div style="font-size:40px; margin-bottom:12px;">
-       🌌
-      </div>
-      <h2 style="font-family:'Orbitron',sans-serif; color:#fff; font-size:22px; font-weight:700; margin:0 0 6px;">Welcome, Explorer</h2>
-      <p style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.4); font-size:14px; margin:0;">Enter your credentials to continue</p>
-     </div>
-     <form id="login-form" onsubmit="handleLogin(event)">
-      <div style="margin-bottom:18px;"><label for="login-user" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.6); font-size:13px; display:block; margin-bottom:6px;">Username</label> <input id="login-user" type="text" class="input-field" placeholder="Enter your username" required>
-      </div>
-      <div style="margin-bottom:28px;"><label for="login-email" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.6); font-size:13px; display:block; margin-bottom:6px;">Email</label> <input id="login-email" type="email" class="input-field" placeholder="Enter your email" required>
-      </div><button type="submit" class="glow-btn" style="width:100%; background:linear-gradient(135deg,#7c3aed,#3b82f6); color:#fff; border-color:transparent; font-size:15px; padding:14px;"> Login → </button>
-     </form>
-    </div>
-   </div>
-  </div><!-- ===== PROFILE PAGE ===== -->
-  <div id="page-profile" class="page profile-bg">
-   <div class="stars-bg" id="profile-stars"></div>
-   <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; padding:40px 20px;">
-    <div class="profile-card fade-up">
-     <div class="profile-avatar">
-      <div class="profile-avatar-inner">
-       👩‍💻
-      </div>
-     </div>
-     <h2 id="profile-name" class="name-highlight" style="font-family:'Orbitron',sans-serif; margin:0 0 8px;">Shalini Mutyala</h2>
-     <div style="display:flex; gap:8px; justify-content:center; margin-bottom:20px; flex-wrap:wrap;"><span style="padding:4px 14px; border-radius:20px; font-size:12px; font-family:'Exo 2',sans-serif; background:rgba(120,80,255,0.15); color:#a78bfa; border:1px solid rgba(120,80,255,0.3);">Creative Developer</span> <span style="padding:4px 14px; border-radius:20px; font-size:12px; font-family:'Exo 2',sans-serif; background:rgba(0,200,150,0.15); color:#34d399; border:1px solid rgba(0,200,150,0.3);">UI Enthusiast</span>
-     </div>
-     <p id="profile-desc" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.65); font-size:15px; line-height:1.8; margin:0 0 30px; max-width:560px;">I'm a passionate and creative web developer who thrives on building interactive, immersive web experiences. With a deep love for modern UI design and cutting-edge technologies, I transform ideas into stunning digital realities. From pixel-perfect interfaces to smooth animations, I craft every element with care and intention. My journey through the code galaxy has taught me that great software is not just functional — it's an experience that delights, inspires, and connects people across the digital universe.</p><button class="glow-btn" style="background:linear-gradient(135deg,#06b6d4,#8b5cf6); color:#fff; border-color:transparent;" onclick="navigateTo('page-explore')"> Explore More → </button>
-    </div>
-   </div>
-  </div><!-- ===== EXPLORE PAGE ===== -->
-  <div id="page-explore" class="page explore-bg">
-   <div class="stars-bg" id="explore-stars"></div>
-   <div style="position:relative; z-index:1; min-height:100%; padding:30px 20px;">
-    <header style="text-align:center; margin-bottom:24px;">
-     <h2 class="fade-up" style="font-family:'Orbitron',sans-serif; color:#fff; font-size:clamp(20px,3.5vw,32px); font-weight:800; margin:0 0 6px;">Explore My Universe</h2>
-     <p class="fade-up stagger-1" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.4); font-size:14px; margin:0;">Discover skills, experience, and creations</p>
-    </header><!-- Tabs -->
-    <nav class="fade-up stagger-2" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:28px;" aria-label="Explore sections"><button class="tab-btn active" onclick="switchTab('skills', this)">Skills</button> <button class="tab-btn" onclick="switchTab('experience', this)">Experience</button> <button class="tab-btn" onclick="switchTab('projects', this)">Projects</button> <button class="tab-btn" onclick="switchTab('journey', this)">My Journey</button> <button class="tab-btn" onclick="switchTab('collabs', this)">Collaborations</button>
-    </nav><!-- Tab Content -->
-    <main id="explore-content" style="max-width:900px; margin:0 auto;"><!-- Skills (default) -->
-     <div id="tab-skills" class="tab-panel"></div>
-     <div id="tab-experience" class="tab-panel" style="display:none;"></div>
-     <div id="tab-projects" class="tab-panel" style="display:none;"></div>
-     <div id="tab-journey" class="tab-panel" style="display:none;"></div>
-     <div id="tab-collabs" class="tab-panel" style="display:none;"></div>
-    </main>
-    <div style="text-align:center; margin-top:36px; padding-bottom:30px;"><button class="glow-btn" style="background:linear-gradient(135deg,#ec4899,#8b5cf6); color:#fff; border-color:transparent;" onclick="navigateTo('page-contact')"> Next: Contact Me → </button>
-    </div>
-   </div>
-  </div><!-- ===== CONTACT PAGE ===== -->
-  <div id="page-contact" class="page contact-bg">
-   <div class="stars-bg" id="contact-stars"></div>
-   <div style="position:relative; z-index:1; min-height:100%; padding:30px 20px;">
-    <header style="text-align:center; margin-bottom:30px;">
-     <h2 class="fade-up" style="font-family:'Orbitron',sans-serif; color:#fff; font-size:clamp(22px,3.5vw,36px); font-weight:800; margin:0 0 8px;">Get In Touch</h2>
-     <p class="fade-up stagger-1" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.4); font-size:14px; margin:0;">Let's create something amazing together</p>
-    </header>
-    <main style="max-width:700px; margin:0 auto;"><!-- Contact Info -->
-     <div class="glass-card fade-up stagger-1" style="padding:24px 28px; margin-bottom:20px; display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
-      <div style="display:flex; align-items:center; gap:10px;">
-       <div style="width:40px; height:40px; border-radius:12px; background:rgba(120,80,255,0.2); display:flex; align-items:center; justify-content:center;"><i data-lucide="mail" style="width:18px; height:18px; color:#a78bfa;"></i>
-       </div>
-       <div>
-        <div style="font-family:'Exo 2',sans-serif; font-size:11px; color:rgba(255,255,255,0.4);">
-         Email
-        </div>
-        <div id="contact-email-display" style="font-family:'Exo 2',sans-serif; font-size:14px; color:#fff;">
-         shalinimutyala92@gmail.com
-        </div>
-       </div>
-      </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-       <div style="width:40px; height:40px; border-radius:12px; background:rgba(0,200,100,0.2); display:flex; align-items:center; justify-content:center;"><i data-lucide="phone" style="width:18px; height:18px; color:#34d399;"></i>
-       </div>
-       <div>
-        <div style="font-family:'Exo 2',sans-serif; font-size:11px; color:rgba(255,255,255,0.4);">
-         WhatsApp
-        </div>
-        <div id="contact-phone-display" style="font-family:'Exo 2',sans-serif; font-size:14px; color:#fff;">
-         9948222376
-        </div>
-       </div>
-      </div>
-     </div><!-- Contact Form -->
-     <div class="glass-card fade-up stagger-2" style="padding:30px; margin-bottom:24px;">
-      <form id="contact-form" onsubmit="handleContact(event)">
-       <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-        <div><label for="c-name" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.5); font-size:12px; display:block; margin-bottom:5px;">Name</label> <input id="c-name" type="text" class="input-field" placeholder="Your name" required>
-        </div>
-        <div><label for="c-email" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.5); font-size:12px; display:block; margin-bottom:5px;">Email</label> <input id="c-email" type="email" class="input-field" placeholder="Your email" required>
-        </div>
-       </div>
-       <div style="margin-bottom:18px;"><label for="c-msg" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.5); font-size:12px; display:block; margin-bottom:5px;">Message</label> <textarea id="c-msg" class="input-field" rows="4" placeholder="Your message..." required style="resize:vertical;"></textarea>
-       </div><button type="submit" class="glow-btn" style="width:100%; background:linear-gradient(135deg,#7c3aed,#06b6d4); color:#fff; border-color:transparent; font-size:14px; padding:13px;"> Send Message 🚀 </button>
-       <div id="contact-success" style="display:none; text-align:center; margin-top:14px; padding:12px; border-radius:12px; background:rgba(0,200,100,0.1); border:1px solid rgba(0,200,100,0.3); color:#34d399; font-family:'Exo 2',sans-serif; font-size:14px;">
-        ✨ Message sent! I'll get back to you soon.
-       </div>
-      </form>
-     </div><!-- FAQ -->
-     <section class="fade-up stagger-3" style="margin-bottom:30px;">
-      <h3 style="font-family:'Orbitron',sans-serif; color:#fff; font-size:18px; font-weight:700; margin:0 0 16px; text-align:center;">Frequently Asked Questions</h3>
-      <div id="faq-container"></div>
-     </section>
-     <div style="text-align:center; padding-bottom:30px;"><button class="glow-btn" style="background:linear-gradient(135deg,#f59e0b,#ec4899); color:#fff; border-color:transparent;" onclick="navigateTo('page-final')"> Final Stop → </button>
-     </div>
-    </main>
-   </div>
-  </div><!-- ===== FINAL PAGE ===== -->
-  <div id="page-final" class="page final-bg">
-   <div class="stars-bg" id="final-stars"></div>
-   <div id="shooting-stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; z-index:1;"></div>
-   <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:30px; text-align:center;">
-    <div class="astronaut-float fade-up" style="font-size:80px; margin-bottom:24px;">
-     🧑‍🚀
-    </div>
-    <h2 id="closing-title" class="fade-up stagger-1" style="font-family:'Orbitron',sans-serif; font-size:clamp(22px,4vw,40px); font-weight:900; margin:0 0 16px; background:linear-gradient(90deg,#fbbf24,#ec4899,#8b5cf6,#06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.3;">Thank You for Visiting My Profile</h2>
-    <p class="fade-up stagger-2" style="font-family:'Exo 2',sans-serif; color:rgba(255,255,255,0.6); font-size:clamp(14px,2.5vw,20px); margin:0 0 30px; max-width:550px; line-height:1.7;">"You are a great explorer of my code galaxy"</p>
-    <div class="fade-up stagger-3" style="font-size:48px; margin-bottom:30px;">
-     🌠🚀✨🌍⭐
-    </div><button class="glow-btn fade-up stagger-4" style="background:linear-gradient(135deg,#7c3aed,#ec4899); color:#fff; border-color:transparent;" onclick="navigateTo('page-landing')"> 🔄 Restart Journey </button>
-   </div>
-  </div><!-- Toast notification -->
-  <div id="toast" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); z-index:200; padding:14px 28px; border-radius:14px; background:rgba(30,20,60,0.95); border:1px solid rgba(120,80,255,0.3); color:#fff; font-family:'Exo 2',sans-serif; font-size:14px; transition:transform 0.4s ease; box-shadow:0 10px 30px rgba(0,0,0,0.5); backdrop-filter:blur(10px);"></div>
   <script>
-// ========== CONFIG & SDK ==========
+// Default config
 const defaultConfig = {
-  landing_title: "Journey Through My Code Galaxy",
+  hero_title: "Journey Through My Code Galaxy",
   profile_name: "Shalini Mutyala",
-  profile_description: "I'm a passionate and creative web developer who thrives on building interactive, immersive web experiences. With a deep love for modern UI design and cutting-edge technologies, I transform ideas into stunning digital realities. From pixel-perfect interfaces to smooth animations, I craft every element with care and intention. My journey through the code galaxy has taught me that great software is not just functional — it's an experience that delights, inspires, and connects people across the digital universe.",
+  profile_description: "Shalini Mutyala is a passionate and creative web developer who thrives on transforming ideas into stunning, interactive digital experiences. With a deep love for modern UI design and front-end technologies, she specializes in crafting pixel-perfect websites that captivate users and tell compelling stories. From sleek landing pages to complex web applications, Shalini brings artistry and technical precision to every project. Her journey through the code galaxy is fueled by curiosity, innovation, and an unwavering commitment to pushing the boundaries of what's possible on the web. She believes that great code is not just functional — it's beautiful, intuitive, and inspires connection.",
   contact_email: "shalinimutyala92@gmail.com",
   contact_phone: "9948222376",
   closing_text: "Thank You for Visiting My Profile",
-  background_color: "#000000",
-  surface_color: "#0a0025",
-  text_color: "#ffffff",
+  background_color: "#000010",
+  surface_color: "#0f0a28",
+  text_color: "#e2e8f0",
   primary_action_color: "#7c3aed",
   secondary_action_color: "#06b6d4",
-  font_family: "Orbitron",
+  font_family: "Exo 2",
   font_size: 16
 };
 
-function applyConfig(config) {
-  const el = (id) => document.getElementById(id);
-  const c = (k) => config[k] || defaultConfig[k];
+// FAQ data
+const faqs = [
+  { q: "What technologies do you specialize in?", a: "I specialize in JavaScript, React, HTML5, CSS3, Tailwind CSS, Node.js, Python, and modern frontend frameworks. I'm always exploring new tools and technologies." },
+  { q: "Are you open to collaborations?", a: "Absolutely! I love collaborating with designers, developers, and creative minds. Whether it's open source, freelance projects, or hackathons — I'm always open." },
+  { q: "Do you build custom portfolios?", a: "Yes! I create bespoke, visually stunning portfolio websites tailored to your unique style and professional needs." },
+  { q: "What's your design philosophy?", a: "I believe great design is invisible — it guides the user naturally. I focus on clean aesthetics, smooth animations, and intuitive interfaces." },
+  { q: "How long does a typical project take?", a: "It depends on complexity. A simple landing page might take 1-2 weeks, while a full web application could take 4-8 weeks." },
+  { q: "Do you offer UI/UX design services?", a: "Yes! I provide end-to-end design and development services, from wireframing and prototyping to final implementation." },
+  { q: "What's your preferred development workflow?", a: "I use agile methodologies with Git version control, component-based architecture, and continuous iteration based on feedback." },
+  { q: "Can you work with existing codebases?", a: "Definitely. I'm experienced in refactoring, optimizing, and extending existing projects while maintaining code quality." },
+  { q: "Do you provide post-launch support?", a: "Yes, I offer maintenance and support packages to keep your website running smoothly after launch." },
+  { q: "How can I get started with a project?", a: "Simply reach out via the contact form above or email me directly. I'll schedule a discovery call to understand your vision!" }
+];
 
-  // Text updates
-  if (el('landing-title')) el('landing-title').textContent = c('landing_title');
-  if (el('profile-name')) el('profile-name').textContent = c('profile_name');
-  if (el('profile-desc')) el('profile-desc').textContent = c('profile_description');
-  if (el('contact-email-display')) el('contact-email-display').textContent = c('contact_email');
-  if (el('contact-phone-display')) el('contact-phone-display').textContent = c('contact_phone');
-  if (el('closing-title')) el('closing-title').textContent = c('closing_text');
-
-  // Colors
-  document.body.style.backgroundColor = c('background_color');
-
-  // Font
-  const fontFamily = c('font_family');
-  const baseFontStack = 'sans-serif';
-  document.querySelectorAll('[style*="font-family"]').forEach(el => {
-    const current = el.style.fontFamily;
-    if (current.includes('Orbitron') || current.includes(fontFamily)) {
-      el.style.fontFamily = `'${fontFamily}', ${baseFontStack}`;
-    }
-  });
-
-  // Font size
-  const baseSize = c('font_size');
-  const titles = document.querySelectorAll('h1, h2');
-  titles.forEach(t => {
-    if (!t.style.fontSize?.includes('clamp')) {
-      t.style.fontSize = `${baseSize * 2}px`;
-    }
-  });
-}
-
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => { applyConfig(config); },
-  mapToCapabilities: (config) => ({
-    recolorables: [
-      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
-      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
-      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
-      { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
-      { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
-    ],
-    borderables: [],
-    fontEditable: {
-      get: () => config.font_family || defaultConfig.font_family,
-      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
-    },
-    fontSizeable: {
-      get: () => config.font_size || defaultConfig.font_size,
-      set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
-    }
-  }),
-  mapToEditPanelValues: (config) => new Map([
-    ["landing_title", config.landing_title || defaultConfig.landing_title],
-    ["profile_name", config.profile_name || defaultConfig.profile_name],
-    ["profile_description", config.profile_description || defaultConfig.profile_description],
-    ["contact_email", config.contact_email || defaultConfig.contact_email],
-    ["contact_phone", config.contact_phone || defaultConfig.contact_phone],
-    ["closing_text", config.closing_text || defaultConfig.closing_text]
-  ])
-});
-
-// ========== STARS ==========
-function createStars(containerId, count = 120) {
+// Generate stars for a container
+function generateStars(containerId, count) {
   const container = document.getElementById(containerId);
   if (!container) return;
   for (let i = 0; i < count; i++) {
     const star = document.createElement('div');
     star.className = 'star';
     const size = Math.random() * 3 + 1;
-    star.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--dur:${Math.random()*3+1}s;animation-delay:${Math.random()*3}s;`;
+    star.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${Math.random()*0.8+0.2};animation:twinkle ${Math.random()*3+2}s ease-in-out infinite;animation-delay:${Math.random()*3}s;`;
     container.appendChild(star);
   }
-}
-['landing-stars','login-stars','profile-stars','explore-stars','contact-stars','final-stars'].forEach(id => createStars(id));
-
-// Shooting stars for final page
-function createShootingStars() {
-  const container = document.getElementById('shooting-stars-container');
-  for (let i = 0; i < 5; i++) {
-    const star = document.createElement('div');
-    star.className = 'shooting-star';
-    const startX = Math.random() * 80;
-    const startY = Math.random() * 50;
-    star.style.cssText = `top:${startY}%;left:${startX}%;--sx:${200+Math.random()*300}px;--sy:${100+Math.random()*200}px;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*5}s;`;
-    container.appendChild(star);
+  // Add shooting stars
+  for (let i = 0; i < 2; i++) {
+    const ss = document.createElement('div');
+    ss.className = 'shooting-star-el';
+    ss.style.cssText = `top:${Math.random()*40}%;left:${Math.random()*60}%;animation:shooting-star ${Math.random()*2+2}s linear infinite;animation-delay:${Math.random()*5+i*3}s;opacity:0;`;
+    container.appendChild(ss);
   }
 }
-createShootingStars();
 
-// ========== NAVIGATION ==========
+// Build FAQ
+function buildFAQ() {
+  const container = document.getElementById('faq-container');
+  faqs.forEach((faq, i) => {
+    const item = document.createElement('div');
+    item.className = 'faq-item';
+    item.style.background = 'rgba(15,10,40,0.8)';
+    item.innerHTML = `
+      <div class="faq-header" onclick="toggleFaq(${i})">
+        <span style="color:rgba(255,255,255,0.85);font-size:14px;font-weight:500;padding-right:12px;">${i+1}. ${faq.q}</span>
+        <span class="faq-chevron" id="faq-chev-${i}" style="color:rgba(0,200,255,0.7);font-size:18px;">▼</span>
+      </div>
+      <div class="faq-body" id="faq-body-${i}">
+        <p style="color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;">${faq.a}</p>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function toggleFaq(i) {
+  const body = document.getElementById(`faq-body-${i}`);
+  const chev = document.getElementById(`faq-chev-${i}`);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// Navigation
 function navigateTo(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(pageId);
-  target.classList.add('active');
-  target.scrollTop = 0;
-  // Trigger fade-up animations
-  setTimeout(() => {
-    target.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
-  }, 100);
-  // Animate skill bars on explore page
-  if (pageId === 'page-explore') {
-    setTimeout(animateSkillBars, 500);
+  if (target) {
+    target.classList.add('active');
+    target.scrollTop = 0;
   }
 }
 
-// Initial page animations
-setTimeout(() => {
-  document.querySelectorAll('#page-landing .fade-up').forEach(el => el.classList.add('visible'));
-}, 200);
-
-// ========== ROCKET LAUNCH ==========
+// Rocket launch animation
 function launchRocket() {
-  const rocket = document.getElementById('rocket');
-  const smokeContainer = document.getElementById('smoke-container');
-  const fireContainer = document.getElementById('fire-particles');
+  const rw = document.getElementById('rocket-wrapper');
+  const sc = document.getElementById('smoke-container');
+  rw.style.display = 'block';
+  sc.innerHTML = '';
 
-  // Start fire particles
-  const fireInterval = setInterval(() => {
-    for (let i = 0; i < 3; i++) {
+  // Create smoke particles
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
       const p = document.createElement('div');
-      p.className = 'fire-particle';
-      const size = Math.random() * 10 + 5;
-      const colors = ['#ff6f00','#ffca28','#ff3d00','#ff9800'];
-      p.style.cssText = `width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--fx:${(Math.random()-0.5)*40}px;--fy:${20+Math.random()*40}px;`;
-      p.classList.add('active');
-      fireContainer.appendChild(p);
-      setTimeout(() => p.remove(), 800);
-    }
-  }, 50);
+      p.className = 'smoke-p';
+      p.style.cssText = `left:${(Math.random()-0.5)*40}px;animation-delay:${Math.random()*0.3}s;width:${Math.random()*15+8}px;height:${Math.random()*15+8}px;`;
+      sc.appendChild(p);
+      setTimeout(() => p.remove(), 1500);
+    }, i * 80);
+  }
 
-  // Start smoke
-  const smokeInterval = setInterval(() => {
-    const smoke = document.createElement('div');
-    smoke.className = 'smoke';
-    const size = Math.random() * 60 + 40;
-    smoke.style.cssText = `width:${size}px;height:${size}px;bottom:0;left:${45+Math.random()*10}%;`;
-    smoke.classList.add('active');
-    smokeContainer.appendChild(smoke);
-    setTimeout(() => smoke.remove(), 2000);
-  }, 80);
-
-  // Launch
-  rocket.classList.add('launching');
-
-  // Transition after rocket leaves
   setTimeout(() => {
-    clearInterval(fireInterval);
-    clearInterval(smokeInterval);
-    rocket.classList.remove('launching');
+    rw.style.display = 'none';
     navigateTo('page-login');
   }, 2200);
 }
 
-// ========== LOGIN ==========
-function handleLogin(e) {
-  e.preventDefault();
-  showToast('Welcome aboard, Explorer! 🚀');
-  setTimeout(() => navigateTo('page-profile'), 800);
+// Contact form success
+function showContactSuccess() {
+  document.getElementById('contact-success').style.display = 'block';
+  document.getElementById('contact-form').reset();
+  setTimeout(() => {
+    document.getElementById('contact-success').style.display = 'none';
+  }, 3000);
 }
 
-// ========== CONTACT ==========
-function handleContact(e) {
-  e.preventDefault();
-  const success = document.getElementById('contact-success');
-  success.style.display = 'block';
-  e.target.reset();
-  setTimeout(() => { success.style.display = 'none'; }, 4000);
+// Apply config to UI
+function applyConfig(config) {
+  const el = (id) => document.getElementById(id);
+  if (el('hero-title')) el('hero-title').textContent = config.hero_title || defaultConfig.hero_title;
+  if (el('profile-name')) el('profile-name').textContent = config.profile_name || defaultConfig.profile_name;
+  if (el('profile-desc')) el('profile-desc').textContent = config.profile_description || defaultConfig.profile_description;
+  if (el('contact-email-display')) el('contact-email-display').textContent = config.contact_email || defaultConfig.contact_email;
+  if (el('contact-phone-display')) el('contact-phone-display').textContent = config.contact_phone || defaultConfig.contact_phone;
+  if (el('closing-text')) el('closing-text').textContent = config.closing_text || defaultConfig.closing_text;
+
+  // Apply colors
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const text = config.text_color || defaultConfig.text_color;
+  const primary = config.primary_action_color || defaultConfig.primary_action_color;
+  const secondary = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+  document.body.style.color = text;
+
+  // Apply font
+  const font = config.font_family || defaultConfig.font_family;
+  const baseSize = config.font_size || defaultConfig.font_size;
+  document.body.style.fontFamily = `'${font}', 'Exo 2', sans-serif`;
+
+  // Scale fonts
+  document.querySelectorAll('h1').forEach(h => { h.style.fontFamily = `'Orbitron', '${font}', sans-serif`; });
+  document.querySelectorAll('h2').forEach(h => { h.style.fontFamily = `'Orbitron', '${font}', sans-serif`; });
+  document.querySelectorAll('h3').forEach(h => { h.style.fontFamily = `'Orbitron', '${font}', sans-serif`; });
+  document.querySelectorAll('p').forEach(p => { p.style.fontSize = `${baseSize}px`; });
 }
 
-// ========== TOAST ==========
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  setTimeout(() => { toast.style.transform = 'translateX(-50%) translateY(100px)'; }, 3000);
-}
+// Initialize
+generateStars('stars-landing', 150);
+generateStars('stars-login', 100);
+generateStars('stars-profile', 120);
+generateStars('stars-explore', 130);
+generateStars('stars-contact', 110);
+generateStars('stars-final', 160);
+buildFAQ();
 
-// ========== EXPLORE TABS ==========
-const tabData = {
-  skills: [
-    { name: 'HTML5 / CSS3', level: 95, color: '#f97316' },
-    { name: 'JavaScript / ES6+', level: 92, color: '#eab308' },
-    { name: 'React.js', level: 88, color: '#06b6d4' },
-    { name: 'Node.js', level: 82, color: '#22c55e' },
-    { name: 'Tailwind CSS', level: 90, color: '#8b5cf6' },
-    { name: 'UI/UX Design', level: 85, color: '#ec4899' }
-  ],
-  experience: [
-    { role: 'Senior Frontend Developer', company: 'TechNova Solutions', period: '2022 – Present', desc: 'Led UI architecture for enterprise SaaS platforms, implementing design systems used across 12+ products.', icon: '🏢' },
-    { role: 'Web Developer', company: 'Creative Digital Agency', period: '2020 – 2022', desc: 'Built 30+ responsive websites and interactive landing pages for global clients, increasing engagement by 45%.', icon: '🎨' },
-    { role: 'Junior Developer', company: 'StartUp Hub', period: '2018 – 2020', desc: 'Developed MVPs for early-stage startups, mastering rapid prototyping and agile development workflows.', icon: '🚀' }
-  ],
-  projects: [
-    { name: 'NebulaDash', desc: 'Real-time analytics dashboard with beautiful data visualizations and dark mode UI.', tags: ['React', 'D3.js', 'Node'], color: '#8b5cf6', emoji: '📊' },
-    { name: 'CosmicShop', desc: 'Full-stack e-commerce platform with seamless checkout and inventory management.', tags: ['Next.js', 'Stripe', 'MongoDB'], color: '#06b6d4', emoji: '🛒' },
-    { name: 'StarNotes', desc: 'Collaborative note-taking app with real-time sync and markdown support.', tags: ['Vue', 'Firebase', 'Tailwind'], color: '#ec4899', emoji: '📝' },
-    { name: 'OrbitChat', desc: 'WebSocket-powered messaging app with end-to-end encryption and video calls.', tags: ['Socket.io', 'WebRTC', 'React'], color: '#f59e0b', emoji: '💬' }
-  ],
-  journey: [
-    { year: '2017', event: 'Wrote my first "Hello World" — fell in love with code', emoji: '💻' },
-    { year: '2018', event: 'Landed my first developer job at a startup', emoji: '🎯' },
-    { year: '2019', event: 'Built my first open-source project with 500+ stars', emoji: '⭐' },
-    { year: '2020', event: 'Transitioned to creative web development & UI design', emoji: '🎨' },
-    { year: '2022', event: 'Led a team of 8 developers on enterprise projects', emoji: '👥' },
-    { year: '2024', event: 'Launched my Code Galaxy portfolio — you\'re exploring it now!', emoji: '🌌' }
-  ],
-  collabs: [
-    { name: 'Open Source Contributions', desc: 'Active contributor to React, Tailwind CSS, and Vite ecosystems. 200+ pull requests merged.', badge: 'Top Contributor', icon: '🌐' },
-    { name: 'Tech Community Workshops', desc: 'Conducted 15+ workshops on modern frontend development and creative coding techniques.', badge: 'Speaker', icon: '🎤' },
-    { name: 'Freelance Partnerships', desc: 'Collaborated with 50+ clients worldwide, delivering pixel-perfect, high-performance web solutions.', badge: 'Global', icon: '🤝' },
-    { name: 'Hackathon Champion', desc: 'Won 3 national hackathons building innovative web applications in 48-hour sprints.', badge: '🏆 Winner', icon: '⚡' }
-  ]
-};
-
-function renderTab(tabName) {
-  const container = document.getElementById(`tab-${tabName}`);
-  if (!container || container.innerHTML) return;
-
-  if (tabName === 'skills') {
-    container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
-      ${tabData.skills.map((s, i) => `
-        <div class="explore-card" style="--glow-color:${s.color};">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <span style="font-family:'Exo 2',sans-serif;color:#fff;font-weight:600;font-size:15px;">${s.name}</span>
-            <span style="font-family:'Orbitron',sans-serif;color:${s.color};font-size:13px;font-weight:700;">${s.level}%</span>
-          </div>
-          <div class="skill-bar-bg">
-            <div class="skill-bar-fill" data-level="${s.level}" style="background:linear-gradient(90deg,${s.color},${s.color}88);"></div>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
-  } else if (tabName === 'experience') {
-    container.innerHTML = `<div style="display:flex;flex-direction:column;gap:16px;">
-      ${tabData.experience.map((e, i) => `
-        <div class="explore-card" style="--glow-color:#f59e0b;">
-          <div style="display:flex;gap:16px;align-items:flex-start;">
-            <div style="font-size:36px;flex-shrink:0;">${e.icon}</div>
-            <div>
-              <h4 style="font-family:'Orbitron',sans-serif;color:#fff;font-size:16px;margin:0 0 4px;font-weight:700;">${e.role}</h4>
-              <div style="font-family:'Exo 2',sans-serif;color:#a78bfa;font-size:13px;margin-bottom:4px;">${e.company} · ${e.period}</div>
-              <p style="font-family:'Exo 2',sans-serif;color:rgba(255,255,255,0.55);font-size:14px;margin:0;line-height:1.6;">${e.desc}</p>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
-  } else if (tabName === 'projects') {
-    container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
-      ${tabData.projects.map(p => `
-        <div class="explore-card" style="--glow-color:${p.color};">
-          <div style="font-size:40px;margin-bottom:12px;">${p.emoji}</div>
-          <h4 style="font-family:'Orbitron',sans-serif;color:#fff;font-size:17px;margin:0 0 8px;font-weight:700;">${p.name}</h4>
-          <p style="font-family:'Exo 2',sans-serif;color:rgba(255,255,255,0.55);font-size:14px;margin:0 0 14px;line-height:1.6;">${p.desc}</p>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${p.tags.map(t => `<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-family:'Exo 2',sans-serif;background:${p.color}22;color:${p.color};border:1px solid ${p.color}44;">${t}</span>`).join('')}
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
-  } else if (tabName === 'journey') {
-    container.innerHTML = `<div style="position:relative;padding-left:40px;">
-      <div style="position:absolute;left:14px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#7c3aed,#06b6d4,#ec4899);border-radius:1px;"></div>
-      ${tabData.journey.map((j, i) => `
-        <div class="explore-card" style="--glow-color:#06b6d4;margin-bottom:14px;position:relative;">
-          <div style="position:absolute;left:-34px;top:18px;width:12px;height:12px;border-radius:50%;background:#06b6d4;border:3px solid #0a0030;box-shadow:0 0 10px rgba(6,182,212,0.5);"></div>
-          <div style="display:flex;gap:14px;align-items:center;">
-            <span style="font-size:28px;">${j.emoji}</span>
-            <div>
-              <div style="font-family:'Orbitron',sans-serif;color:#06b6d4;font-size:14px;font-weight:700;margin-bottom:2px;">${j.year}</div>
-              <div style="font-family:'Exo 2',sans-serif;color:rgba(255,255,255,0.7);font-size:14px;">${j.event}</div>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
-  } else if (tabName === 'collabs') {
-    container.innerHTML = `<div style="text-align:center;margin-bottom:20px;">
-      <span class="collab-badge">🤝 Open to Collaborations</span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
-      ${tabData.collabs.map(c => `
-        <div class="explore-card" style="--glow-color:#fbbf24;border:1px solid rgba(251,191,36,0.15);">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-            <span style="font-size:36px;">${c.icon}</span>
-            <span style="padding:4px 12px;border-radius:12px;font-size:11px;font-family:'Exo 2',sans-serif;background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);font-weight:600;">${c.badge}</span>
-          </div>
-          <h4 style="font-family:'Orbitron',sans-serif;color:#fbbf24;font-size:15px;margin:0 0 6px;font-weight:700;">${c.name}</h4>
-          <p style="font-family:'Exo 2',sans-serif;color:rgba(255,255,255,0.55);font-size:13px;margin:0;line-height:1.6;">${c.desc}</p>
-        </div>
-      `).join('')}
-    </div>`;
-  }
-}
-
-function switchTab(tabName, btnEl) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btnEl.classList.add('active');
-  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
-  const panel = document.getElementById(`tab-${tabName}`);
-  panel.style.display = 'block';
-  renderTab(tabName);
-  if (tabName === 'skills') setTimeout(animateSkillBars, 200);
-}
-
-function animateSkillBars() {
-  document.querySelectorAll('.skill-bar-fill').forEach(bar => {
-    const level = bar.getAttribute('data-level');
-    bar.style.width = '0%';
-    setTimeout(() => { bar.style.width = level + '%'; }, 100);
+// Element SDK
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig: defaultConfig,
+    onConfigChange: async (config) => {
+      applyConfig(config);
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+        { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ["hero_title", config.hero_title || defaultConfig.hero_title],
+      ["profile_name", config.profile_name || defaultConfig.profile_name],
+      ["profile_description", config.profile_description || defaultConfig.profile_description],
+      ["contact_email", config.contact_email || defaultConfig.contact_email],
+      ["contact_phone", config.contact_phone || defaultConfig.contact_phone],
+      ["closing_text", config.closing_text || defaultConfig.closing_text]
+    ])
   });
 }
 
-// Initialize first tab
-renderTab('skills');
-
-// ========== FAQ ==========
-const faqs = [
-  { q: "What technologies do you specialize in?", a: "I specialize in HTML5, CSS3, JavaScript (ES6+), React.js, Next.js, Node.js, Tailwind CSS, and modern UI/UX design tools like Figma." },
-  { q: "Are you open to collaborations?", a: "Absolutely! I love collaborating on innovative projects. Whether it's open source, freelance, or full-time — I'm always excited to connect with fellow creators." },
-  { q: "Do you build custom portfolios?", a: "Yes! I design and develop fully custom, interactive portfolio websites tailored to showcase your unique skills and personality." },
-  { q: "What's your design philosophy?", a: "I believe great design is invisible — it guides users naturally while delighting them with subtle details, smooth animations, and thoughtful interactions." },
-  { q: "How do you approach new projects?", a: "I start with understanding the user's needs, create wireframes and prototypes, iterate on feedback, and deliver pixel-perfect, performant solutions." },
-  { q: "Do you offer ongoing support?", a: "Yes, I provide post-launch support including bug fixes, performance optimization, and feature enhancements to keep your project running smoothly." },
-  { q: "What's your experience with responsive design?", a: "Every project I build is mobile-first and fully responsive, ensuring a seamless experience across all devices from phones to ultrawide monitors." },
-  { q: "Can you work with existing codebases?", a: "Definitely! I'm experienced in refactoring, modernizing, and extending existing projects while maintaining code quality and team conventions." },
-  { q: "What industries have you worked with?", a: "I've worked across e-commerce, SaaS, education, healthcare, fintech, and creative agencies — each bringing unique challenges I love solving." },
-  { q: "How can I get in touch?", a: "You can reach me via email at shalinimutyala92@gmail.com or WhatsApp at 9948222376. I typically respond within 24 hours!" }
-];
-
-const faqContainer = document.getElementById('faq-container');
-faqs.forEach((faq, i) => {
-  const item = document.createElement('div');
-  item.className = 'faq-item';
-  item.innerHTML = `
-    <div class="faq-header" onclick="this.parentElement.classList.toggle('open')">
-      <span>${faq.q}</span>
-      <span class="faq-chevron">▼</span>
-    </div>
-    <div class="faq-body">${faq.a}</div>
-  `;
-  faqContainer.appendChild(item);
-});
-
-// Init Lucide
 lucide.createIcons();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dca78ef21e97ef1',t:'MTc3MzU2Njc0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dcace2134e4285b',t:'MTc3MzU3MDIzMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
